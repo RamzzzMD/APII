@@ -24,18 +24,23 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
         const formData = new FormData(formRef.current);
         const queryParams = new URLSearchParams();
         const bodyParams = {};
+        const formPayload = new FormData(); // Untuk multipart/form-data
+        let isMultipart = false;
         let path = endpoint.path;
 
         endpoint.params.forEach(param => {
             const value = formData.get(param.name);
             if (value) {
                 if (param.in === 'query') queryParams.append(param.name, value);
+                else if (param.in === 'formData') {
+                    isMultipart = true;
+                    formPayload.append(param.name, value); // Value di sini bisa berupa File object
+                }
                 else if (param.in === 'body') {
-                    // Coba parse string JSON kembali ke objek/array jika parameternya JSON string
                     try {
-                        const trimmed = value.trim();
-                        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-                            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                        const trimmed = typeof value === 'string' ? value.trim() : value;
+                        if (typeof trimmed === 'string' && ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+                            (trimmed.startsWith('[') && trimmed.endsWith(']')))) {
                             bodyParams[param.name] = JSON.parse(trimmed);
                         } else {
                             bodyParams[param.name] = value;
@@ -49,7 +54,11 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
         });
 
         const fetchOptions = { method: endpoint.method, headers: {} };
-        if (Object.keys(bodyParams).length > 0) {
+        
+        if (isMultipart) {
+            // Browser akan otomatis set Content-Type: multipart/form-data dengan boundary yang benar
+            fetchOptions.body = formPayload;
+        } else if (Object.keys(bodyParams).length > 0) {
             fetchOptions.headers['Content-Type'] = 'application/json';
             fetchOptions.body = JSON.stringify(bodyParams);
         }
@@ -122,7 +131,6 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                     }
                 }
 
-                // Konversi nilai objek/array menjadi string agar bisa ditampilkan di input field
                 const processedValues = {};
                 Object.keys(parsedBody).forEach(key => {
                     const val = parsedBody[key];
@@ -249,16 +257,19 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                                                         </div>
                                                         <div className="relative">
                                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
-                                                                <i className={`fas ${param.in === 'query' ? 'fa-search' : param.in === 'body' ? 'fa-code' : 'fa-link'} text-xs`}></i>
+                                                                <i className={`fas ${param.in === 'query' ? 'fa-search' : (param.in === 'body' || param.in === 'formData') ? (param.type === 'file' ? 'fa-upload' : 'fa-code') : 'fa-link'} text-xs`}></i>
                                                             </div>
                                                             <input
                                                                 name={param.name}
-                                                                type="text"
+                                                                type={param.type === 'file' ? 'file' : 'text'}
                                                                 placeholder={param.description || `Enter ${param.name}...`}
-                                                                value={formValues[param.name] || ''}
-                                                                onChange={handleInputChange}
-                                                                className="w-full bg-input border border-default rounded-xl pl-9 pr-3 py-2.5 text-sm text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-gray-700"
+                                                                {...(param.type !== 'file' ? { 
+                                                                    value: formValues[param.name] || '', 
+                                                                    onChange: handleInputChange 
+                                                                } : {})}
+                                                                className={`w-full bg-input border border-default rounded-xl pl-9 pr-3 py-2.5 text-sm text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-gray-700 ${param.type === 'file' ? 'file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700' : ''}`}
                                                                 required={param.required}
+                                                                accept={param.type === 'file' ? 'image/*' : undefined}
                                                             />
                                                         </div>
                                                     </div>
