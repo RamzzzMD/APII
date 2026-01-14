@@ -255,6 +255,12 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        
+                                                        {/* FIX: Description is moved outside input to allow wrapping on mobile */}
+                                                        {param.description && (
+                                                            <p className="text-[10px] text-gray-500 mb-2 leading-relaxed break-words">{param.description}</p>
+                                                        )}
+
                                                         <div className="relative">
                                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
                                                                 <i className={`fas ${param.in === 'query' ? 'fa-search' : (param.in === 'body' || param.in === 'formData') ? (param.type === 'file' ? 'fa-upload' : 'fa-code') : 'fa-link'} text-xs`}></i>
@@ -262,7 +268,7 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                                                             <input
                                                                 name={param.name}
                                                                 type={param.type === 'file' ? 'file' : 'text'}
-                                                                placeholder={param.description || `Enter ${param.name}...`}
+                                                                placeholder={`Enter ${param.name}...`}
                                                                 {...(param.type !== 'file' ? { 
                                                                     value: formValues[param.name] || '', 
                                                                     onChange: handleInputChange 
