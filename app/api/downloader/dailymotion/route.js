@@ -82,12 +82,15 @@ export async function POST(req) {
                 };
 
                 // Format SSE Sukses
-                const tempRes = await fetch(`${origin}/api/temp/save`, {
-                   method: 'POST',
-                   body: JSON.stringify(finalData)
-                }).then(r => r.ok ? r.json() : {id: null});
+                try {
+                    await fetch(`${origin}/api/temp/save`, {
+                       method: 'POST',
+                       body: JSON.stringify(finalData)
+                    });
+                } catch (e) {
+                    console.error("Temp save failed:", e.message);
+                }
 
-                // Jika endpoint internal temp/save belum ada, kita gunakan uploader langsung saja di response
                 await send(`[true] ${origin}${publicUrl}`);
 
             } catch (err) {
