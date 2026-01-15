@@ -61,7 +61,8 @@ export async function POST(req) {
 
                 // Proses download via FFmpeg
                 await new Promise((resolve, reject) => {
-                    const ffmpegCmd = `"${ffmpeg}" -i "${info.streamUrl}" -c copy -bsf:a aac_adtstoasc "${tempFilePath}" -y`;
+                    const ffmpegPath = ffmpeg || 'ffmpeg';
+                    const ffmpegCmd = `${ffmpegPath} -i "${info.streamUrl}" -c copy -bsf:a aac_adtstoasc "${tempFilePath}" -y`;
                     exec(ffmpegCmd, (error) => {
                         if (error) return reject(new Error(`FFmpeg Error: ${error.message}`));
                         resolve();
