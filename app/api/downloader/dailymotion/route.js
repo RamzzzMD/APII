@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getVideoInfo } from '../../../../lib/dailymotion';
 import { encrypt } from '../../../../lib/crypto';
+import tempService from '../../../../lib/tempService';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300; 
+export const maxDuration = 60; 
 
 export async function POST(req) {
     try {
@@ -21,10 +22,7 @@ export async function POST(req) {
             throw new Error("Gagal mendapatkan URL stream video.");
         }
 
-        // Dailymotion 'auto' quality is usually an m3u8 playlist.
-        // If we want a direct MP4, we should check if there are direct qualities.
-        // For now, providing the stream URL directly via proxy.
-        
+        // Enkripsi URL target dan header yang dibutuhkan (Cookie & UA)
         const encrypted = encrypt(JSON.stringify({
             url: info.streamUrl,
             headers: {
@@ -33,32 +31,32 @@ export async function POST(req) {
                 'Referer': 'https://www.dailymotion.com/'
             }
         }));
+        
         const resultUrl = `${origin}/api/media/${encrypted}`;
 
         const finalData = {
             title: info.title,
             thumbnail: info.thumbnail?.url,
             channel: info.channel?.displayName,
+            duration: info.duration,
+            views: info.viewCount,
             url: resultUrl
         };
 
-        // Save to temp store for fastupdate/UI if needed
-        try {
-            await fetch(`${origin}/api/temp/save`, {
-               method: 'POST',
-               body: JSON.stringify(finalData)
-            });
-        } catch (e) {
-            console.error("Temp save failed:", e.message);
-        }
+        // Simpan hasil ke temp store agar bisa di-retrieve via /api/temp/[id]
+        const tempId = await tempService.save(finalData, 30);
 
         return NextResponse.json({
             success: true,
             author: "PuruBoy",
+            tempId: tempId,
             result: finalData
         });
 
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ 
+            success: false,
+            error: error.message 
+        }, { status: 500 });
     }
 }
