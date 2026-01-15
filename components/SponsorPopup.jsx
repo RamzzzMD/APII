@@ -4,29 +4,38 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function SponsorPopup() {
-    const [isVisible, setIsVisible] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     useEffect(() => {
-        // Tampilkan popup setiap kali komponen di-mount (setiap refresh halaman)
-        setIsVisible(true);
-        // Kunci scroll body saat popup muncul
+        // Tampilkan component
+        setShouldRender(true);
+        // Trigger animasi masuk (fade in + slide up) dengan sedikit delay
+        const timer = setTimeout(() => setIsAnimating(true), 100);
+        
+        // Kunci scroll body
         document.body.style.overflow = 'hidden';
         
         return () => {
             document.body.style.overflow = 'auto';
+            clearTimeout(timer);
         };
     }, []);
 
     const handleClose = () => {
-        setIsVisible(false);
-        document.body.style.overflow = 'auto';
+        setIsAnimating(false); // Trigger animasi keluar
+        // Tunggu animasi selesai sebelum unmount (500ms untuk smooth exit)
+        setTimeout(() => {
+            setShouldRender(false);
+            document.body.style.overflow = 'auto';
+        }, 500);
     };
 
-    if (!isVisible) return null;
+    if (!shouldRender) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="native-card w-full max-w-sm overflow-hidden relative animate-slide-up shadow-2xl border border-gray-700 bg-[#181820]">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-500 ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`native-card w-full max-w-sm overflow-hidden relative shadow-2xl border border-gray-700 bg-[#181820] transition-all duration-500 transform ${isAnimating ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-8 opacity-0'}`}>
                 {/* Close Button */}
                 <button 
                     onClick={handleClose}

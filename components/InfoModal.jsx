@@ -16,7 +16,8 @@ const InfoModal = ({ isOpen, onClose, title, children }) => {
             setAnimationState(true);
             document.body.style.overflow = 'hidden';
         } else {
-            const timer = setTimeout(() => setAnimationState(false), 300);
+            // UPDATED: Delay diperpanjang ke 500ms agar sinkron dengan durasi animasi baru
+            const timer = setTimeout(() => setAnimationState(false), 500);
             document.body.style.overflow = 'auto';
             return () => clearTimeout(timer);
         }
@@ -26,7 +27,7 @@ const InfoModal = ({ isOpen, onClose, title, children }) => {
 
     return createPortal(
         <div 
-            className={`fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+            className={`fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
             onClick={onClose}
         >
             {/* Bottom Sheet Wrapper */}
@@ -34,8 +35,8 @@ const InfoModal = ({ isOpen, onClose, title, children }) => {
                 className={`
                     w-full md:w-full md:max-w-lg bg-card border-t md:border border-default 
                     rounded-t-2xl md:rounded-2xl shadow-2xl max-h-[85vh] flex flex-col
-                    transition-transform duration-300 cubic-bezier(0.16, 1, 0.3, 1)
-                    ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-full md:translate-y-10 md:scale-95'}
+                    transform transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)
+                    ${isOpen ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full md:translate-y-10 opacity-0 md:scale-95'}
                 `}
                 onClick={e => e.stopPropagation()}
             >

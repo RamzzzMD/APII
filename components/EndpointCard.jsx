@@ -205,152 +205,153 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                     </div>
                 </div>
 
-                {isOpen && (
-                    <div className="border-t border-default animate-fade-in">
-                        <div className="flex border-b border-default bg-black/10">
-                            {['params', 'example', 'response'].map(tab => (
-                                <button 
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)} 
-                                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-wide transition-all 
-                                        ${activeTab === tab 
-                                            ? 'text-accent border-b-2 border-accent bg-accent/5' 
-                                            : 'text-muted hover:text-secondary'}`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                        <div className="border-t border-default">
+                            <div className="flex border-b border-default bg-black/10">
+                                {['params', 'example', 'response'].map(tab => (
+                                    <button 
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)} 
+                                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-wide transition-all 
+                                            ${activeTab === tab 
+                                                ? 'text-accent border-b-2 border-accent bg-accent/5' 
+                                                : 'text-muted hover:text-secondary'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
 
-                        <div className="p-5 bg-black/20">
-                            {activeTab === 'params' && (
-                                <div className="animate-fade-in">
-                                    <form ref={formRef} onSubmit={handleTryItOut}>
+                            <div className="p-5 bg-black/20">
+                                {activeTab === 'params' && (
+                                    <div className="animate-fade-in">
+                                        <form ref={formRef} onSubmit={handleTryItOut}>
+                                            {endpoint.example && (
+                                                <div className="flex justify-end mb-4">
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={autoFill}
+                                                        className="text-xs bg-accent/10 text-accent hover:bg-accent/20 px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                                                    >
+                                                        <i className="fas fa-magic"></i> Auto Fill
+                                                    </button>
+                                                </div>
+                                            )}
+                                            
+                                            {endpoint.params.length > 0 ? (
+                                                <div className="space-y-4">
+                                                    {endpoint.params.map(param => (
+                                                        <div key={param.name} className="group">
+                                                            <div className="flex justify-between items-center mb-1.5">
+                                                                <label className="text-xs font-mono text-secondary group-focus-within:text-accent transition-colors">
+                                                                    {param.name}
+                                                                </label>
+                                                                <div className="flex gap-2">
+                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 uppercase">{param.in}</span>
+                                                                    {param.required ? (
+                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-400 font-bold uppercase">Required</span>
+                                                                    ) : (
+                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500 uppercase">Optional</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {param.description && (
+                                                                <p className="text-[10px] text-gray-500 mb-2 leading-relaxed break-words">{param.description}</p>
+                                                            )}
+
+                                                            <div className="relative">
+                                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
+                                                                    <i className={`fas ${param.in === 'query' ? 'fa-search' : (param.in === 'body' || param.in === 'formData') ? (param.type === 'file' ? 'fa-upload' : 'fa-code') : 'fa-link'} text-xs`}></i>
+                                                                </div>
+                                                                <input
+                                                                    name={param.name}
+                                                                    type={param.type === 'file' ? 'file' : 'text'}
+                                                                    placeholder={`Enter ${param.name}...`}
+                                                                    {...(param.type !== 'file' ? { 
+                                                                        value: formValues[param.name] || '', 
+                                                                        onChange: handleInputChange 
+                                                                    } : {})}
+                                                                    className={`w-full bg-input border border-default rounded-xl pl-9 pr-3 py-2.5 text-sm text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-gray-700 ${param.type === 'file' ? 'file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700' : ''}`}
+                                                                    required={param.required}
+                                                                    accept={param.type === 'file' ? 'image/*' : undefined}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-6 bg-input/50 rounded-xl border border-dashed border-default">
+                                                    <p className="text-sm text-muted">Tidak ada parameter yang diperlukan.</p>
+                                                </div>
+                                            )}
+                                            
+                                            <button 
+                                                type="submit" 
+                                                disabled={isLoading}
+                                                className="mt-6 w-full bg-accent hover:bg-accent-hover text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-accent/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                {isLoading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-play"></i>}
+                                                {isLoading ? 'Processing...' : 'Test Endpoint'}
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
+
+                                {activeTab === 'example' && (
+                                    <div className="relative group animate-fade-in">
+                                        <pre className="bg-code p-4 rounded-xl overflow-x-auto text-xs border border-default custom-scrollbar">
+                                            <code className="language-javascript font-mono">
+                                                {endpoint.example ? endpoint.example.replace(/fetch\(['"](.*?)['"]/g, `fetch('${baseUrl}$1'`) : '// Tidak ada contoh tersedia'}
+                                            </code>
+                                        </pre>
                                         {endpoint.example && (
-                                            <div className="flex justify-end mb-4">
-                                                <button 
-                                                    type="button" 
-                                                    onClick={autoFill}
-                                                    className="text-xs bg-accent/10 text-accent hover:bg-accent/20 px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-2"
-                                                >
-                                                    <i className="fas fa-magic"></i> Auto Fill
-                                                </button>
+                                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <CopyButton textToCopy={endpoint.example.replace(/fetch\(['"](.*?)['"]/g, `fetch('${baseUrl}$1'`)} />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'response' && (
+                                    <div className="animate-fade-in min-h-[150px]">
+                                        {!finalData && !isLoading && (
+                                            <div className="flex flex-col items-center justify-center h-full py-8 text-muted space-y-2">
+                                                <i className="fas fa-terminal text-2xl mb-2 opacity-50"></i>
+                                                <p className="text-xs">Tekan &quot;Test Endpoint&quot; untuk melihat hasil.</p>
                                             </div>
                                         )}
                                         
-                                        {endpoint.params.length > 0 ? (
-                                            <div className="space-y-4">
-                                                {endpoint.params.map(param => (
-                                                    <div key={param.name} className="group">
-                                                        <div className="flex justify-between items-center mb-1.5">
-                                                            <label className="text-xs font-mono text-secondary group-focus-within:text-accent transition-colors">
-                                                                {param.name}
-                                                            </label>
-                                                            <div className="flex gap-2">
-                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 uppercase">{param.in}</span>
-                                                                {param.required ? (
-                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-900/30 text-red-400 font-bold uppercase">Required</span>
-                                                                ) : (
-                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500 uppercase">Optional</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* FIX: Description is moved outside input to allow wrapping on mobile */}
-                                                        {param.description && (
-                                                            <p className="text-[10px] text-gray-500 mb-2 leading-relaxed break-words">{param.description}</p>
-                                                        )}
-
-                                                        <div className="relative">
-                                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
-                                                                <i className={`fas ${param.in === 'query' ? 'fa-search' : (param.in === 'body' || param.in === 'formData') ? (param.type === 'file' ? 'fa-upload' : 'fa-code') : 'fa-link'} text-xs`}></i>
-                                                            </div>
-                                                            <input
-                                                                name={param.name}
-                                                                type={param.type === 'file' ? 'file' : 'text'}
-                                                                placeholder={`Enter ${param.name}...`}
-                                                                {...(param.type !== 'file' ? { 
-                                                                    value: formValues[param.name] || '', 
-                                                                    onChange: handleInputChange 
-                                                                } : {})}
-                                                                className={`w-full bg-input border border-default rounded-xl pl-9 pr-3 py-2.5 text-sm text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-gray-700 ${param.type === 'file' ? 'file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700' : ''}`}
-                                                                required={param.required}
-                                                                accept={param.type === 'file' ? 'image/*' : undefined}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-6 bg-input/50 rounded-xl border border-dashed border-default">
-                                                <p className="text-sm text-muted">Tidak ada parameter yang diperlukan.</p>
+                                        {isLoading && (
+                                            <div className="flex flex-col items-center justify-center py-10">
+                                                <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3"></div>
+                                                <p className="text-xs text-accent animate-pulse">Menghubungi server...</p>
                                             </div>
                                         )}
-                                        
-                                        <button 
-                                            type="submit" 
-                                            disabled={isLoading}
-                                            className="mt-6 w-full bg-accent hover:bg-accent-hover text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-accent/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                        >
-                                            {isLoading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-play"></i>}
-                                            {isLoading ? 'Processing...' : 'Test Endpoint'}
-                                        </button>
-                                    </form>
-                                </div>
-                            )}
 
-                            {activeTab === 'example' && (
-                                <div className="relative group animate-fade-in">
-                                    <pre className="bg-code p-4 rounded-xl overflow-x-auto text-xs border border-default custom-scrollbar">
-                                        <code className="language-javascript font-mono">
-                                            {endpoint.example ? endpoint.example.replace(/fetch\(['"](.*?)['"]/g, `fetch('${baseUrl}$1'`) : '// Tidak ada contoh tersedia'}
-                                        </code>
-                                    </pre>
-                                    {endpoint.example && (
-                                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <CopyButton textToCopy={endpoint.example.replace(/fetch\(['"](.*?)['"]/g, `fetch('${baseUrl}$1'`)} />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {activeTab === 'response' && (
-                                <div className="animate-fade-in min-h-[150px]">
-                                    {!finalData && !isLoading && (
-                                        <div className="flex flex-col items-center justify-center h-full py-8 text-muted space-y-2">
-                                            <i className="fas fa-terminal text-2xl mb-2 opacity-50"></i>
-                                            <p className="text-xs">Tekan &quot;Test Endpoint&quot; untuk melihat hasil.</p>
-                                        </div>
-                                    )}
-                                    
-                                    {isLoading && (
-                                        <div className="flex flex-col items-center justify-center py-10">
-                                            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3"></div>
-                                            <p className="text-xs text-accent animate-pulse">Menghubungi server...</p>
-                                        </div>
-                                    )}
-
-                                    {finalData && (
-                                        <div className="relative">
-                                            <div className={`flex justify-between items-center mb-2 px-1`}>
-                                                <span className={`text-xs font-bold px-2 py-1 rounded ${finalData.ok ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-                                                    {finalData.status} {finalData.ok ? 'OK' : 'Error'} 
-                                                    {finalData.isStream && <span className="ml-2 text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded animate-pulse">STREAMING</span>}
-                                                </span>
-                                                <CopyButton textToCopy={finalData.data} />
+                                        {finalData && (
+                                            <div className="relative">
+                                                <div className={`flex justify-between items-center mb-2 px-1`}>
+                                                    <span className={`text-xs font-bold px-2 py-1 rounded ${finalData.ok ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                                                        {finalData.status} {finalData.ok ? 'OK' : 'Error'} 
+                                                        {finalData.isStream && <span className="ml-2 text-[10px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded animate-pulse">STREAMING</span>}
+                                                    </span>
+                                                    <CopyButton textToCopy={finalData.data} />
+                                                </div>
+                                                <pre className="bg-code p-4 rounded-xl overflow-x-auto max-h-[400px] text-xs border border-default custom-scrollbar shadow-inner">
+                                                    <code className={`language-${finalData.isStream ? 'text' : (finalData.ok ? 'json' : 'text')} font-mono`}>
+                                                        {finalData.data}
+                                                    </code>
+                                                </pre>
                                             </div>
-                                            <pre className="bg-code p-4 rounded-xl overflow-x-auto max-h-[400px] text-xs border border-default custom-scrollbar shadow-inner">
-                                                <code className={`language-${finalData.isStream ? 'text' : (finalData.ok ? 'json' : 'text')} font-mono`}>
-                                                    {finalData.data}
-                                                </code>
-                                            </pre>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
 
             <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} title="Detail Endpoint">
