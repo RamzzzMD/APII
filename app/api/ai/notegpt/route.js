@@ -7,7 +7,7 @@ export const maxDuration = 60;
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { prompt } = body;
+        const { prompt, model, chat_mode } = body;
 
         if (!prompt) {
             return NextResponse.json({ error: "Parameter 'prompt' wajib diisi." }, { status: 400 });
@@ -23,7 +23,11 @@ export async function POST(req) {
 
         (async () => {
             try {
-                const generator = chatStream(prompt);
+                const generator = chatStream(
+                    prompt, 
+                    model || 'gemini-3-flash-preview', 
+                    chat_mode || 'standard'
+                );
                 
                 for await (const chunk of generator) {
                     await send(chunk);
