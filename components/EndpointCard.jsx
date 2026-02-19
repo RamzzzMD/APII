@@ -4,7 +4,7 @@ import MethodBadge from './MethodBadge';
 import CopyButton from './CopyButton';
 import InfoModal from './InfoModal';
 
-const EndpointCard = ({ endpoint, baseUrl }) => {
+const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('params'); 
     const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +14,13 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
     
     const formRef = useRef(null);
     const fullUrl = `${baseUrl}${endpoint.path}`;
+
+    // Handle external expand request (e.g. from shared URL)
+    useEffect(() => {
+        if (isHighlighted) {
+            setIsOpen(true);
+        }
+    }, [isHighlighted]);
 
     const handleTryItOut = async (e) => {
         e.preventDefault();
@@ -178,9 +185,17 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
         }
     }, [isOpen, activeTab, finalData?.data, finalData?.isStream]);
 
+    // Generate Share URL
+    const shareUrl = typeof window !== 'undefined' 
+        ? `${window.location.origin}/docs?endpoint=${encodeURIComponent(endpoint.path)}`
+        : '';
+
     return (
         <>
-            <div className="native-card mb-4 overflow-hidden rounded-2xl">
+            <div 
+                id={id} 
+                className={`native-card mb-4 overflow-hidden rounded-2xl transition-all duration-500 ${isHighlighted ? 'ring-2 ring-accent shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-accent/5' : ''}`}
+            >
                 <div 
                     onClick={() => setIsOpen(!isOpen)}
                     className="p-4 flex items-center justify-between cursor-pointer active:bg-white/5 transition-colors"
@@ -193,6 +208,14 @@ const EndpointCard = ({ endpoint, baseUrl }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-3 ml-2">
+                        {/* Share Button Wrapper Changed to Div to avoid button nesting */}
+                        <div 
+                            onClick={(e) => { e.stopPropagation(); }}
+                            className="group/share relative w-8 h-8 flex items-center justify-center rounded-full bg-input text-muted hover:text-white transition-colors"
+                        >
+                            <CopyButton textToCopy={shareUrl} iconOnly />
+                        </div>
+
                          {endpoint.description && (
                             <button 
                                 onClick={(e) => { e.stopPropagation(); setIsInfoOpen(true); }}

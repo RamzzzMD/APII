@@ -10,8 +10,21 @@ const copyToClipboard = (text, setCopied) => {
     });
 };
 
-const CopyButton = ({ textToCopy }) => {
+const CopyButton = ({ textToCopy, iconOnly = false }) => {
     const [copied, setCopied] = useState(false);
+    
+    if (iconOnly) {
+         return (
+            <button
+                onClick={() => copyToClipboard(textToCopy, setCopied)}
+                className={`w-full h-full flex items-center justify-center transition-all duration-200 rounded-full ${copied ? 'text-green-400' : 'text-current'}`}
+                title="Salin Link Endpoint"
+            >
+                <i className={`fas ${copied ? 'fa-check' : 'fa-share-alt'} text-xs`}></i>
+            </button>
+        );
+    }
+
     return (
         <button
             onClick={() => copyToClipboard(textToCopy, setCopied)}
