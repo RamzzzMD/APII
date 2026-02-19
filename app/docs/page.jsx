@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { getDocsSpec } from '../../lib/docsService';
 import DocsClient from '../../components/DocsClient';
 
@@ -30,5 +30,14 @@ export default async function DocsPage() {
         );
     }
 
-    return <DocsClient apiSpec={apiSpec} />;
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-20 min-h-[60vh]">
+                <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-muted text-sm animate-pulse">Menyiapkan dokumentasi...</p>
+            </div>
+        }>
+            <DocsClient apiSpec={apiSpec} />
+        </Suspense>
+    );
 }
