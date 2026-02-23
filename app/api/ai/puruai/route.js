@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import chatbotController from '../../../../lib/controllers/ai/chatbot';
+import puruaiController from '../../../../lib/controllers/ai/puruai';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export async function POST(req) {
         // Mock request object for controller
         const mockReq = { body };
         
-        const result = await chatbotController(mockReq);
+        const result = await puruaiController(mockReq);
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json({ 
