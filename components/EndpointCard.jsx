@@ -4,7 +4,7 @@ import MethodBadge from './MethodBadge';
 import CopyButton from './CopyButton';
 import InfoModal from './InfoModal';
 
-const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
+const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand, selectionMode, isSelected, onToggleSelect }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('params'); 
     const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +14,7 @@ const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
     
     const formRef = useRef(null);
     const fullUrl = `${baseUrl}${endpoint.path}`;
+    const hasAutoFill = !!endpoint.example;
 
     // Handle external expand request (e.g. from shared URL)
     useEffect(() => {
@@ -121,7 +122,7 @@ const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
     };
 
     const autoFill = () => {
-        if (!endpoint.example) return;
+        if (!hasAutoFill) return;
         try {
             const jsonMatch = endpoint.example.match(/body:\s*JSON\.stringify\(([\s\S]*?)\)/);
             if (jsonMatch) {
@@ -201,6 +202,16 @@ const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
                     className="p-4 flex items-center justify-between cursor-pointer active:bg-white/5 transition-colors"
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
+                        {selectionMode && (
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); onToggleSelect(endpoint); }} 
+                                className="mr-1 flex items-center justify-center shrink-0"
+                            >
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-accent border-accent' : 'border-default bg-input hover:border-accent'}`}>
+                                    {isSelected && <i className="fas fa-check text-white text-[10px]"></i>}
+                                </div>
+                            </div>
+                        )}
                         <MethodBadge method={endpoint.method} />
                         <div className="flex flex-col min-w-0">
                             <span className="text-xs font-mono text-accent truncate">{endpoint.path}</span>
@@ -253,7 +264,7 @@ const EndpointCard = ({ endpoint, baseUrl, id, isHighlighted, onExpand }) => {
                                 {activeTab === 'params' && (
                                     <div className="animate-fade-in">
                                         <form ref={formRef} onSubmit={handleTryItOut}>
-                                            {endpoint.example && (
+                                            {hasAutoFill && (
                                                 <div className="flex justify-end mb-4">
                                                     <button 
                                                         type="button" 

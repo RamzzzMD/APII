@@ -61,6 +61,21 @@ export default function DocsClient({ apiSpec }) {
     const [showShareModal, setShowShareModal] = useState(false);
     const [highlightedEndpoint, setHighlightedEndpoint] = useState(null);
 
+    // Selection Mode to Context
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedEndpoints, setSelectedEndpoints] = useState(new Set());
+    const [isGeneratingContext, setIsGeneratingContext] = useState(false);
+    const [contextErrors, setContextErrors] = useState([]);
+
+    // Manual Input Modal State for Context Generation
+    const [manualInputState, setManualInputState] = useState({
+        isOpen: false,
+        endpoint: null,
+        resolve: null,
+        reject: null,
+        values: {}
+    });
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setBaseUrl(window.location.origin);
@@ -71,7 +86,6 @@ export default function DocsClient({ apiSpec }) {
     useEffect(() => {
         const epPath = searchParams.get('endpoint');
         if (epPath && apiSpec) {
-            // Find the endpoint details
             let found = null;
             let foundCategory = null;
 
@@ -95,14 +109,12 @@ export default function DocsClient({ apiSpec }) {
         if (!sharedEndpoint) return;
         
         setShowShareModal(false);
-        setActiveCategory('all'); // Show all so we can find it
-        setSearchQuery(''); // Clear search
+        setActiveCategory('all');
+        setSearchQuery('');
         
-        // Remove query param without reload
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
 
-        // Delay slightly to allow rendering
         setTimeout(() => {
             const elementId = `ep-${sharedEndpoint.method}-${sharedEndpoint.path}`.replace(/[^a-zA-Z0-9-]/g, '_');
             const element = document.getElementById(elementId);
@@ -111,12 +123,206 @@ export default function DocsClient({ apiSpec }) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setHighlightedEndpoint(elementId);
                 
-                // Remove highlight after 2 seconds
                 setTimeout(() => {
                     setHighlightedEndpoint(null);
                 }, 2000);
             }
         }, 300);
+    };
+
+    const toggleSelectionMode = () => {
+        setSelectionMode(!selectionMode);
+        if (selectionMode) {
+            setSelectedEndpoints(new Set());
+            setContextErrors([]);
+        }
+    };
+
+    const handleToggleSelect = (endpoint) => {
+        const newSet = new Set(selectedEndpoints);
+        if (newSet.has(endpoint.path)) {
+            newSet.delete(endpoint.path);
+        } else {
+            newSet.add(endpoint.path);
+        }
+        setSelectedEndpoints(newSet);
+    };
+
+    const requestManualInput = (endpoint) => {
+        return new Promise((resolve, reject) => {
+            setManualInputState({
+                isOpen: true,
+                endpoint,
+                resolve,
+                reject,
+                values: {}
+            });
+        });
+    };
+
+    const handleManualSubmit = (e) => {
+        e.preventDefault();
+        if (manualInputState.resolve) {
+            manualInputState.resolve(manualInputState.values);
+        }
+        setManualInputState({ isOpen: false, endpoint: null, resolve: null, reject: null, values: {} });
+    };
+
+    const handleManualCancel = () => {
+        if (manualInputState.reject) {
+            manualInputState.reject(new Error('User cancelled manual input.'));
+        }
+        setManualInputState({ isOpen: false, endpoint: null, resolve: null, reject: null, values: {} });
+    };
+
+    const generateContext = async () => {
+        setIsGeneratingContext(true);
+        setContextErrors([]);
+        let output = '';
+        const errors = [];
+
+        const selectedList = [];
+        if (apiSpec) {
+            Object.values(apiSpec).forEach(endpoints => {
+                endpoints.forEach(ep => {
+                    if (selectedEndpoints.has(ep.path)) {
+                        selectedList.push(ep);
+                    }
+                });
+            });
+        }
+
+        for (const ep of selectedList) {
+            try {
+                let pathWithQuery = ep.path;
+                let bodyParams = null;
+                let isMultipart = false;
+                let formPayload = new FormData();
+                let queryParams = new URLSearchParams();
+
+                const requiredParams = ep.params ? ep.params.filter(p => p.required) : [];
+                const needsManualInput = requiredParams.length > 0 && !ep.example;
+
+                if (needsManualInput) {
+                    // Trigger manual input prompt and wait for user submission
+                    const userInputs = await requestManualInput(ep);
+
+                    // Process manual inputs
+                    ep.params.forEach(param => {
+                        const val = userInputs[param.name];
+                        if (val !== undefined && val !== null && val !== '') {
+                            if (param.in === 'query') queryParams.append(param.name, val);
+                            else if (param.in === 'path') pathWithQuery = pathWithQuery.replace(`:${param.name}`, encodeURIComponent(val));
+                            else if (param.in === 'formData') {
+                                isMultipart = true;
+                                formPayload.append(param.name, val);
+                            }
+                            else if (param.in === 'body') {
+                                bodyParams = bodyParams || {};
+                                try {
+                                    const trimmed = typeof val === 'string' ? val.trim() : val;
+                                    if (typeof trimmed === 'string' && ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']')))) {
+                                        bodyParams[param.name] = JSON.parse(trimmed);
+                                    } else {
+                                        bodyParams[param.name] = val;
+                                    }
+                                } catch (e) {
+                                    bodyParams[param.name] = val;
+                                }
+                            }
+                        }
+                    });
+
+                    if (queryParams.toString()) {
+                        pathWithQuery += '?' + queryParams.toString();
+                    }
+
+                } else if (ep.example) {
+                    // Parse example string for auto-fill context
+                    const urlMatch = ep.example.match(/fetch\(['"`](.*?)['"`]/);
+                    if (urlMatch) {
+                        const urlParts = urlMatch[1].split('?');
+                        if (urlParts.length > 1) {
+                            pathWithQuery += '?' + urlParts[1];
+                        }
+                    }
+
+                    const jsonMatch = ep.example.match(/body:\s*JSON\.stringify\(([\s\S]*?)\)/);
+                    if (jsonMatch) {
+                        const bodyStr = jsonMatch[1];
+                        try {
+                            bodyParams = JSON.parse(bodyStr);
+                        } catch (e) {
+                            try {
+                                bodyParams = new Function(`return ${bodyStr}`)();
+                            } catch(err) {}
+                        }
+                    }
+                }
+
+                const finalUrl = `${baseUrl}${pathWithQuery}`;
+                const fetchOptions = { method: ep.method, headers: {} };
+                
+                if (isMultipart) {
+                    fetchOptions.body = formPayload;
+                } else if (bodyParams) {
+                    fetchOptions.headers['Content-Type'] = 'application/json';
+                    fetchOptions.body = JSON.stringify(bodyParams);
+                }
+
+                const res = await fetch(finalUrl, fetchOptions);
+                const contentType = res.headers.get("content-type") || "";
+                let responseData = "";
+
+                if (contentType.includes("application/json")) {
+                    const json = await res.json();
+                    responseData = JSON.stringify(json, null, 2);
+                } else if (res.body) {
+                    const reader = res.body.getReader();
+                    const decoder = new TextDecoder();
+                    let streamText = '';
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        streamText += decoder.decode(value, { stream: true });
+                    }
+                    responseData = streamText;
+                } else {
+                    responseData = await res.text();
+                }
+
+                const exampleCodeStr = ep.example ? `Example Code:\n${ep.example}\n` : `Example Code: [Manual Input or Not Available]\n`;
+
+                output += `--${finalUrl}--\n${exampleCodeStr}Code: ${res.status}\nRespon:\n${responseData}\n--End--\n\n`;
+
+                if (!res.ok) {
+                    errors.push(`[${ep.path}] Error ${res.status}`);
+                }
+            } catch (e) {
+                if (e.message === 'User cancelled manual input.') {
+                    errors.push(`[${ep.path}] Dibatalkan oleh user.`);
+                } else {
+                    errors.push(`[${ep.path}] Failed: ${e.message}`);
+                    output += `--${baseUrl}${ep.path}--\nCode: Error\nRespon:\n${e.message}\n--End--\n\n`;
+                }
+            }
+        }
+
+        if (errors.length > 0) {
+            setContextErrors(errors);
+        }
+
+        if (output.trim()) {
+            const blob = new Blob([output], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'konteks.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        setIsGeneratingContext(false);
     };
 
     const categories = useMemo(() => apiSpec ? Object.keys(apiSpec).sort() : [], [apiSpec]);
@@ -146,7 +352,7 @@ export default function DocsClient({ apiSpec }) {
     }, [filteredSpec]);
 
     return (
-        <div className="animate-fade-in pb-24">
+        <div className="animate-fade-in pb-24 relative">
             {/* Sticky Header */}
             <div className="sticky-header -mx-4 px-4 pt-4 pb-3 mb-6">
                 {/* Title Row */}
@@ -155,10 +361,17 @@ export default function DocsClient({ apiSpec }) {
                         <h1 className="text-2xl font-extrabold text-primary tracking-tight">Dokumentasi</h1>
                         <p className="text-[11px] text-muted mt-0.5">{totalEndpoints} endpoint tersedia</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-end gap-2">
                         <div className="bg-accent text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg shadow-accent/20">
                             v1.0
                         </div>
+                        <button 
+                            onClick={toggleSelectionMode}
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors border ${selectionMode ? 'bg-accent text-white border-accent' : 'bg-transparent text-accent border-accent/50 hover:bg-accent/10'}`}
+                        >
+                            <i className={`fas ${selectionMode ? 'fa-times' : 'fa-list-check'} mr-1`}></i> 
+                            {selectionMode ? 'Cancel Context' : 'To Context'}
+                        </button>
                     </div>
                 </div>
 
@@ -245,6 +458,9 @@ export default function DocsClient({ apiSpec }) {
                                         baseUrl={baseUrl} 
                                         id={epId}
                                         isHighlighted={highlightedEndpoint === epId}
+                                        selectionMode={selectionMode}
+                                        isSelected={selectedEndpoints.has(endpoint.path)}
+                                        onToggleSelect={handleToggleSelect}
                                     />
                                 );
                             })}
@@ -268,6 +484,73 @@ export default function DocsClient({ apiSpec }) {
                     </div>
                 )}
             </div>
+
+            {/* Context Generator Panel - Fixed Viewport Bounds */}
+            {selectionMode && (
+                <div className="fixed bottom-[80px] md:bottom-10 left-4 right-4 md:left-auto md:right-5 md:w-[340px] bg-card/95 backdrop-blur-xl border border-accent/50 p-4 rounded-2xl shadow-[0_10px_40px_rgba(236,72,153,0.3)] z-[70] flex flex-col gap-3 animate-slide-up max-h-[60vh]">
+                    <div className="flex justify-between items-center shrink-0">
+                        <span className="text-sm font-bold text-white">{selectedEndpoints.size} Endpoint Terpilih</span>
+                        <button onClick={() => setSelectedEndpoints(new Set())} className="text-xs text-muted hover:text-red-400 font-bold px-2 py-1 bg-white/5 rounded">Clear</button>
+                    </div>
+                    
+                    {contextErrors.length > 0 && (
+                        <div className="text-[10px] text-red-400 overflow-y-auto custom-scrollbar bg-red-900/10 p-2 rounded border border-red-900/30 font-mono space-y-1">
+                            {contextErrors.map((err, i) => <div key={i}>• {err}</div>)}
+                        </div>
+                    )}
+                    
+                    <button 
+                        onClick={generateContext}
+                        disabled={selectedEndpoints.size === 0 || isGeneratingContext}
+                        className="w-full shrink-0 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-accent/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        {isGeneratingContext ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-download"></i>}
+                        {isGeneratingContext ? 'Generating...' : 'Generate Context'}
+                    </button>
+                </div>
+            )}
+
+            {/* Manual Input Request Modal */}
+            <InfoModal 
+                isOpen={manualInputState.isOpen} 
+                onClose={handleManualCancel} 
+                title="Input Manual Diperlukan"
+            >
+                {manualInputState.endpoint && (
+                    <div className="space-y-4">
+                        <div className="bg-yellow-900/20 border border-yellow-700/50 p-3 rounded-xl text-yellow-500 text-xs leading-relaxed">
+                            <i className="fas fa-exclamation-triangle mr-2"></i>
+                            Endpoint <strong className="font-mono text-white">{manualInputState.endpoint.path}</strong> tidak memiliki autofill dan ada payload wajib yang perlu diisi. Silakan masukkan input di bawah untuk melanjutkan proses context.
+                        </div>
+                        <form onSubmit={handleManualSubmit} className="space-y-4">
+                            {manualInputState.endpoint.params.map(param => (
+                                <div key={param.name}>
+                                    <label className="text-xs font-mono text-secondary mb-1.5 block">
+                                        {param.name} {param.required && <span className="text-red-400">*</span>}
+                                    </label>
+                                    <input
+                                        type={param.type === 'file' ? 'file' : 'text'}
+                                        required={param.required}
+                                        onChange={(e) => {
+                                            const val = param.type === 'file' ? e.target.files[0] : e.target.value;
+                                            setManualInputState(prev => ({
+                                                ...prev,
+                                                values: { ...prev.values, [param.name]: val }
+                                            }));
+                                        }}
+                                        className={`w-full bg-input border border-default rounded-xl px-3 py-2.5 text-sm text-primary focus:outline-none focus:border-accent ${param.type === 'file' ? 'file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700' : ''}`}
+                                        placeholder={`Masukkan ${param.name}...`}
+                                    />
+                                </div>
+                            ))}
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={handleManualCancel} className="flex-1 py-3 text-sm font-bold text-muted hover:text-white bg-transparent border border-default rounded-xl transition-colors">Batal</button>
+                                <button type="submit" className="flex-1 py-3 text-sm font-bold text-white bg-accent hover:bg-accent-hover rounded-xl shadow-lg shadow-accent/20 transition-transform active:scale-95">Lanjutkan</button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+            </InfoModal>
 
             {/* Expert Comments Section */}
             <div className="mt-16 mb-8">
@@ -306,15 +589,17 @@ export default function DocsClient({ apiSpec }) {
             </footer>
 
             {/* Floating TOC Button */}
-            <button 
-                onClick={() => setIsTocOpen(!isTocOpen)}
-                className="fixed bottom-24 right-5 w-14 h-14 bg-accent hover:bg-accent-hover text-white rounded-full shadow-2xl shadow-accent/30 flex items-center justify-center z-50 active:scale-90 transition-all md:hidden border-2 border-white/10"
-            >
-                <i className={`fas ${isTocOpen ? 'fa-times' : 'fa-list-ul'} text-lg`}></i>
-            </button>
+            {!selectionMode && (
+                <button 
+                    onClick={() => setIsTocOpen(!isTocOpen)}
+                    className="fixed bottom-24 right-5 w-14 h-14 bg-accent hover:bg-accent-hover text-white rounded-full shadow-2xl shadow-accent/30 flex items-center justify-center z-50 active:scale-90 transition-all md:hidden border-2 border-white/10"
+                >
+                    <i className={`fas ${isTocOpen ? 'fa-times' : 'fa-list-ul'} text-lg`}></i>
+                </button>
+            )}
 
             {/* Floating TOC Menu */}
-            {isTocOpen && (
+            {isTocOpen && !selectionMode && (
                 <div className="fixed bottom-40 right-5 bg-card/95 backdrop-blur-xl border border-default rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1 min-w-[190px] max-h-80 overflow-y-auto animate-slide-up origin-bottom-right">
                     <div className="text-[10px] font-bold text-muted px-3 py-2 uppercase tracking-widest border-b border-default mb-1">
                         <i className="fas fa-compass mr-1 text-accent"></i> Jump to
