@@ -77,8 +77,8 @@ const ChannelPromo = () => (
     <div className="native-card overflow-hidden relative group mb-8 border-none ring-1 ring-white/10">
         <div className="relative h-40 w-full bg-gray-900">
             <Image 
-                src="/puruboy-ch.jpg" 
-                alt="PuruBoy Channel" 
+                src="/asuuu.jpeg" 
+                alt="Ranzz Channel" 
                 fill
                 className="object-cover opacity-70 group-hover:scale-105 transition-transform duration-700"
                 sizes="(max-width: 768px) 100vw, 600px"
