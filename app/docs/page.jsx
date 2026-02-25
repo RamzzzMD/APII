@@ -5,7 +5,7 @@ import DocsClient from '../../components/DocsClient';
 export const metadata = {
     title: 'Dokumentasi Lengkap | Ranzz API',
     description: 'Jelajahi endpoint Ranzz API. Dokumentasi interaktif untuk fitur AI, Downloader, Anime, dan Tools lainnya.',
-    keywords: ['Dokumentasi API', 'API Docs', 'PuruBoy Endpoints', 'Cara menggunakan PuruBoy API']
+    keywords: ['Dokumentasi API', 'API Docs', 'Ranzz Endpoints', 'Cara menggunakan Ranzzy API']
 };
 
 export const revalidate = 3600;
