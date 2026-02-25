@@ -6,8 +6,8 @@ import { getDocsSpec } from '../lib/docsService';
 export const revalidate = 3600;
 
 export const metadata = {
-    title: 'PuruBoy API - Home',
-    description: 'Beranda PuruBoy API. Temukan berbagai REST API gratis untuk kebutuhan proyek aplikasi Anda.',
+    title: 'Ranzz API - Home',
+    description: 'Beranda Ranzz API. Temukan berbagai REST API gratis untuk kebutuhan proyek aplikasi Anda.',
 };
 
 const Hero = () => (
@@ -281,7 +281,7 @@ export default async function HomePage() {
             {/* Footer CTA */}
             <div className="mt-8 p-5 native-card text-center border-dashed border-accent/30 bg-gradient-to-b from-accent/5 to-transparent">
                 <i className="fas fa-code text-accent text-2xl mb-3 block"></i>
-                <p className="text-xs text-secondary mb-4 leading-relaxed">Mulai integrasikan PuruBoy API ke proyek kamu sekarang. Gratis, tanpa auth.</p>
+                <p className="text-xs text-secondary mb-4 leading-relaxed">Mulai integrasikan Ranzz API ke proyek kamu sekarang. Gratis, tanpa auth.</p>
                 <Link href="/docs" className="inline-flex items-center gap-2 bg-accent text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg shadow-accent/25 hover:bg-accent-hover transition-all active:scale-95">
                     <i className="fas fa-rocket text-sm"></i>
                     Mulai Sekarang
