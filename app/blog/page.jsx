@@ -3,8 +3,8 @@ import blogService from '../../lib/blogService';
 import BlogClient from '../../components/BlogClient';
 
 export const metadata = {
-    title: 'Blog & Update Sistem | PuruBoy API',
-    description: 'Informasi terbaru mengenai update sistem, tutorial penggunaan, dan changelog PuruBoy API.',
+    title: 'Blog & Update Sistem | Ranzz API',
+    description: 'Informasi terbaru mengenai update sistem, tutorial penggunaan, dan changelog Ranzz API.',
 };
 
 export const revalidate = 60;
@@ -32,7 +32,7 @@ export default async function BlogPage() {
             <div className="sticky-header -mx-4 px-4 py-4 mb-6 flex justify-between items-end">
                 <div>
                     <h1 className="text-2xl font-bold text-primary tracking-tight">Blog Updates</h1>
-                    <p className="text-xs text-secondary mt-1">Berita & Tutorial PuruBoy API</p>
+                    <p className="text-xs text-secondary mt-1">Berita & Tutorial Ranzz API</p>
                 </div>
                 <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center text-accent">
                     <i className="fas fa-newspaper"></i>
