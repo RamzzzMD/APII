@@ -39,7 +39,7 @@ export default function Footer() {
                         
                         <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
                             <a 
-                                href="https://jakysoft.xyz" 
+                                href="https://apii.ranzzajaah.my.id" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20"
@@ -47,7 +47,7 @@ export default function Footer() {
                                 <i className="fas fa-globe"></i> Kunjungi Website
                             </a>
                             <a 
-                                href="https://wa.me/6283826724514" 
+                                href="https://wa.me/6285959936196" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="bg-[#25D366] hover:bg-[#1da851] text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-green-900/20"
@@ -60,7 +60,7 @@ export default function Footer() {
             </div>
 
             <div className="text-center">
-                <p className="text-muted text-xs">PuruBoy API &copy; {new Date().getFullYear()} - Developed with ❤️</p>
+                <p className="text-muted text-xs">Ranzz API &copy; {new Date().getFullYear()} - Developed with ❤️</p>
             </div>
         </footer>
     );
