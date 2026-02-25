@@ -30,7 +30,7 @@ export default function Footer() {
                     
                     <div className="flex-1">
                         <h3 className="text-lg font-bold text-white mb-1 flex items-center justify-center sm:justify-start gap-2">
-                            Supported by JakySoft
+                            Supported by Ranzz
                             <i className="fas fa-check-circle text-blue-400 text-xs"></i>
                         </h3>
                         <p className="text-sm text-gray-400 mb-4 leading-relaxed">
