@@ -16,26 +16,26 @@ export const viewport = {
 export const metadata = {
   metadataBase: new URL('https://puruboy-api.vercel.app'),
   title: {
-    default: 'PuruBoy API - Platform API Modular & Tools AI Gratis',
-    template: '%s | PuruBoy API'
+    default: 'Ranzz API - Platform API Modular & Tools AI Gratis',
+    template: '%s | Ranzz API'
   },
-  description: 'PuruBoy API menyediakan layanan REST API gratis untuk developer. Fitur mencakup AI Chat, Text to Image, Downloader (TikTok, YouTube, IG), Anime Streaming, dan Tools bermanfaat lainnya. Cepat, stabil, dan mudah diintegrasikan.',
-  keywords: ['PuruBoy API', 'REST API Gratis', 'API AI Indonesia', 'TikTok Downloader API', 'YouTube API', 'Anime API', 'Web Tools', 'Developer Resources'],
-  authors: [{ name: 'PuruBoy' }],
-  creator: 'PuruBoy',
+  description: 'Ranzz API menyediakan layanan REST API gratis untuk developer. Fitur mencakup AI Chat, Text to Image, Downloader (TikTok, YouTube, IG), Anime Streaming, dan Tools bermanfaat lainnya. Cepat, stabil, dan mudah diintegrasikan.',
+  keywords: ['Ranzz API', 'REST API Gratis', 'API AI Indonesia', 'TikTok Downloader API', 'YouTube API', 'Anime API', 'Web Tools', 'Developer Resources'],
+  authors: [{ name: 'Ranzz' }],
+  creator: 'Ranzz',
   openGraph: {
-    title: 'PuruBoy API - Solusi API Modular & Cepat',
+    title: 'Ranzz API - Solusi API Modular & Cepat',
     description: 'Akses ratusan endpoint API gratis untuk AI, Downloader, dan Anime. Dokumentasi lengkap dan respons cepat.',
-    url: 'https://puruboy-api.vercel.app',
-    siteName: 'PuruBoy API',
+    url: 'https://apii.ranzzajaah.my.id/',
+    siteName: 'Ranzz API',
     locale: 'id_ID',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PuruBoy API - Platform API & Tools AI',
+    title: 'Ranzz API - Platform API & Tools AI',
     description: 'Platform API gratis dengan fitur AI, Downloader, dan Anime.',
-    creator: '@puruboy',
+    creator: '@rannzxyyy_',
   },
   robots: {
     index: true,
