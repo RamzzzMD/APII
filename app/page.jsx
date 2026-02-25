@@ -115,7 +115,7 @@ const ChannelPromo = () => (
 
 async function getContributors() {
     try {
-        const res = await fetch('https://api.github.com/repos/purujawa06-bot/Na-api/contributors?per_page=15', {
+        const res = await fetch('https://api.github.com/repos/RanzzMD/APIII/contributors?per_page=15', {
             next: { revalidate: 3600 }
         });
         if (!res.ok) return [];
@@ -253,14 +253,14 @@ export default async function HomePage() {
                     <a href="https://api.ranzzajaah.my.id" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-input/50 hover:bg-input p-3 rounded-xl border border-default transition-all group">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                            <span className="text-xs font-mono text-gray-300 group-hover:text-accent transition-colors">www.puruboy.kozow.com</span>
+                            <span className="text-xs font-mono text-gray-300 group-hover:text-accent transition-colors">api.ranzzajaah.my.id</span>
                         </div>
                         <span className="text-[9px] bg-green-500/10 text-green-400 px-2 py-1 rounded-full font-bold uppercase tracking-wider border border-green-500/20">Stabil</span>
                     </a>
-                    <a href="https://apii-chi-six.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-input/50 hover:bg-input p-3 rounded-xl border border-default transition-all group">
+                    <a href="https://apii-chi-six.vercel.app" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-input/50 hover:bg-input p-3 rounded-xl border border-default transition-all group">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-                            <span className="text-xs font-mono text-gray-300 group-hover:text-accent transition-colors">puruboy-api.vercel.app</span>
+                            <span className="text-xs font-mono text-gray-300 group-hover:text-accent transition-colors">apii-chi-six.vercel.app</span>
                         </div>
                         <span className="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded-full font-bold uppercase tracking-wider border border-blue-500/20">Cloud</span>
                     </a>
