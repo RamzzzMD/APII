@@ -20,8 +20,8 @@ export default function Footer() {
                     
                     <div className="w-16 h-16 rounded-2xl relative overflow-hidden bg-gray-800 shrink-0 shadow-lg shadow-blue-500/20 rotate-3 group-hover:rotate-0 transition-transform duration-300">
                          <Image 
-                            src="/jakysoft.jpg" 
-                            alt="JakySoft Logo" 
+                            src="/wmmm.png" 
+                            alt="Ranzz Logo" 
                             fill
                             className="object-cover"
                             sizes="64px"
