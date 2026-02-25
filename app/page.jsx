@@ -115,7 +115,7 @@ const ChannelPromo = () => (
 
 async function getContributors() {
     try {
-        const res = await fetch('https://api.github.com/repos/RanzzMD/APIII/contributors?per_page=15', {
+        const res = await fetch('https://api.github.com/repos/kamdjut-ui/uploader/contributors?per_page=15', {
             next: { revalidate: 3600 }
         });
         if (!res.ok) return [];
