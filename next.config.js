@@ -19,7 +19,7 @@ const nextConfig = {
           { key: "Access-Control-Allow-Origin", value: "*" }, // Izinkan akses dari semua domain
           { key: "Access-Control-Allow-Methods", value: "GET,DELETE,PATCH,POST,PUT" },
           { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" },
-          { key: "Contact", value: "wa.me/6283894391287" } // Header kontak tambahan
+          { key: "Contact", value: "wa.me/6281214300828" } // Header kontak tambahan
         ]
       }
     ]
