@@ -410,7 +410,7 @@ export default function ChatPage() {
                     
                     <h1 className="text-2xl font-bold text-[#f2f3f5] mb-2">Welcome Back!</h1>
                     <p className="text-[#b5bac1] text-sm mb-8">
-                        Join the PuruBoy Community chat.
+                        Join the Ranzz Community chat.
                     </p>
                     
                     <form onSubmit={handleLogin} className="space-y-4 text-left">
