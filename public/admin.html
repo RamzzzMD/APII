@@ -136,6 +136,7 @@
         <div class="flex overflow-x-auto border-b border-default bg-black/20 sticky top-[73px] z-40 backdrop-blur-md">
             <button onclick="switchTab('create')" id="tab-create" class="tab-btn active flex-none px-6 py-3 text-sm font-bold text-gray-500 uppercase tracking-wider">New Post</button>
             <button onclick="switchTab('list')" id="tab-list" class="tab-btn flex-none px-6 py-3 text-sm font-bold text-gray-500 uppercase tracking-wider">All Posts</button>
+            <button onclick="switchTab('featured')" id="tab-featured" class="tab-btn flex-none px-6 py-3 text-sm font-bold text-gray-500 uppercase tracking-wider">Popup Fitur</button>
         </div>
 
         <main class="p-4 space-y-6">
@@ -195,6 +196,43 @@
                 </div>
             </div>
 
+            <!-- VIEW: FEATURED ENDPOINT -->
+            <div id="view-featured" class="hidden animate-fade-in">
+                <div class="native-card p-5">
+                    <h2 class="text-lg font-bold text-white mb-4">Set Popup Fitur Baru</h2>
+                    <form id="featured-form" class="space-y-4">
+                        <div class="flex items-center justify-between mb-2 p-3 bg-gray-900/50 rounded-xl border border-gray-800">
+                            <div>
+                                <span class="text-sm font-bold text-white block">Aktifkan Popup</span>
+                                <span class="text-xs text-gray-500">Munculkan popup ke user</span>
+                            </div>
+                            <input type="checkbox" id="f-active" class="w-6 h-6 accent-pink-500 rounded">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Judul Popup</label>
+                            <input type="text" id="f-title" placeholder="Fitur AI DeepSeek R1 Baru!" class="input-field text-sm" required>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Deskripsi</label>
+                            <textarea id="f-desc" rows="3" placeholder="Ayo cobain AI reasoning terbaru dari DeepSeek sekarang." class="input-field text-sm" required></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Endpoint Path</label>
+                            <input type="text" id="f-path" placeholder="/api/ai/deepseek" class="input-field text-sm" required>
+                            <p class="text-[10px] text-gray-500 mt-1">Gunakan path API untuk langsung membuka endpoint di Dokumentasi, atau gunakan URL lain.</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-1 block uppercase">Version</label>
+                            <input type="text" id="f-version" placeholder="1.0.0" class="input-field text-sm" required>
+                            <p class="text-[10px] text-gray-500 mt-1">Ganti versi ini agar popup muncul kembali di pengguna yang sudah dismiss sebelumnya.</p>
+                        </div>
+                        <button type="submit" class="btn-primary w-full shadow-lg shadow-pink-900/20 mt-4">
+                            <i class="fas fa-save"></i> Simpan Pengaturan
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -233,13 +271,14 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${tabName}`).classList.add('active');
             
-            ['create', 'list'].forEach(v => {
+            ['create', 'list', 'featured'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.add('hidden');
             });
             
             document.getElementById(`view-${tabName}`).classList.remove('hidden');
             
             if(tabName === 'list') fetchPosts(1);
+            if(tabName === 'featured') fetchFeatured();
         }
 
         function showAdmin() {
@@ -367,6 +406,52 @@
         }
         document.getElementById('cancel-edit-btn').onclick = resetForm;
         async function deletePost(id) { if(confirm('Delete?')) { await api(`/blogs/${id}`, { method: 'DELETE' }); fetchPosts(currentPage); } }
+
+        /* --- FEATURED POPUP LOGIC --- */
+        async function fetchFeatured() {
+            try {
+                const res = await fetch(`${API_BASE}/admin/featured`);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('f-active').checked = data.active || false;
+                    document.getElementById('f-title').value = data.title || '';
+                    document.getElementById('f-desc').value = data.description || '';
+                    document.getElementById('f-path').value = data.path || '';
+                    document.getElementById('f-version').value = data.version || '1.0.0';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.getElementById('featured-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const body = JSON.stringify({
+                active: document.getElementById('f-active').checked,
+                title: document.getElementById('f-title').value,
+                description: document.getElementById('f-desc').value,
+                path: document.getElementById('f-path').value,
+                version: document.getElementById('f-version').value
+            });
+
+            try {
+                const res = await api('/admin/featured', { method: 'POST', body });
+                if(res.ok) {
+                    alert('Popup Fitur berhasil diperbarui!');
+                } else {
+                    alert('Gagal memperbarui Popup Fitur.');
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan jaringan.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
     </script>
 </body>
 </html>
