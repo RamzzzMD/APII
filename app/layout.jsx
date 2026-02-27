@@ -4,6 +4,7 @@ import './globals.css';
 import BottomNav from '../components/BottomNav';
 import NextNProgress from '../components/NextNProgress';
 import Footer from '../components/Footer';
+import FeaturedPopup from '../components/FeaturedPopup';
 
 export const viewport = {
   width: 'device-width',
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
         />
         
         <NextNProgress />
+        <FeaturedPopup />
         
         <div className="background-animation"></div>
         
