@@ -4,6 +4,7 @@ import './globals.css';
 import BottomNav from '../components/BottomNav';
 import NextNProgress from '../components/NextNProgress';
 import Footer from '../components/Footer';
+import FeaturedPopup from '../components/FeaturedPopup';
 
 export const viewport = {
   width: 'device-width',
@@ -14,7 +15,7 @@ export const viewport = {
 };
 
 export const metadata = {
-  metadataBase: new URL('https://puruboy-api.vercel.app'),
+  metadataBase: new URL('https://apii.ranzzajaah.my.id/),
   title: {
     default: 'Ranzz API - Platform API Modular & Tools AI Gratis',
     template: '%s | Ranzz API'
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
         />
         
         <NextNProgress />
+        <FeaturedPopup />
         
         <div className="background-animation"></div>
         
