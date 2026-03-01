@@ -22,7 +22,7 @@ export async function GET(req) {
 
         return NextResponse.json({
             success: true,
-            author: 'PuruBoy',
+            author: 'Ranzz',
             result: status
         });
     } catch (error) {
