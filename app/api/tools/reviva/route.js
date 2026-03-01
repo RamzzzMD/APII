@@ -1,25 +1,19 @@
 import { NextResponse } from 'next/server';
-import { kolorize } from '../../../../lib/kolorize';
+import { imggenColorize } from '../../../../lib/imggenColorize';
 import tempService from '../../../../lib/tempService';
 
-// Daftar Fakta Unik untuk Keep Alive
 const FACTS = [
-    "YA NDAK TAU TANYA KOK TANYA SAYA HMMM",
-    "Semut tidak pernah tidur.",
-    "Sapi tidak memiliki gigi atas.",
-    "Madu adalah satu-satunya makanan yang tidak basi.",
-    "Siput bisa tidur selama 3 tahun.",
-    "Gajah adalah satu-satunya mamalia yang tidak bisa melompat.",
+    "AI mewarnai foto dengan menganalisis tekstur dan konteks objek.",
+    "Warna kulit manusia dan dedaunan adalah hal termudah bagi AI untuk dikenali.",
+    "Foto hitam putih sebenarnya menyimpan informasi kontras yang sangat detail.",
+    "Proses ini menggunakan Generative Adversarial Networks (GAN).",
+    "Mewarnai satu foto secara manual oleh profesional bisa memakan waktu berjam-jam.",
     "Lidah jerapah berwarna biru hitam.",
-    "Kupu-kupu merasakan rasa dengan kaki mereka.",
-    "Jantung udang terletak di kepala.",
-    "Babi tidak bisa melihat ke langit.",
-    "Cokelat bisa membunuh anjing karena mengandung theobromine.",
-    "Otak manusia bekerja lebih aktif saat tidur daripada saat menonton TV.",
-    "Air panas membeku lebih cepat daripada air dingin (Efek Mpemba)."
+    "Otak manusia bekerja lebih aktif saat tidur daripada saat menonton TV."
 ];
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 export async function POST(req) {
     try {
@@ -32,8 +26,6 @@ export async function POST(req) {
 
         const origin = new URL(req.url).origin;
         const encoder = new TextEncoder();
-        
-        // Menggunakan TransformStream untuk mekanisme streaming yang lebih lancar
         const customStream = new TransformStream();
         const writer = customStream.writable.getWriter();
 
@@ -41,45 +33,35 @@ export async function POST(req) {
             return writer.write(encoder.encode(text)).catch(() => {});
         };
 
-        // Jalankan logika secara asinkron (tidak memblokir pengiriman response awal)
         (async () => {
             let keepAliveInterval;
             try {
-                await send("Memulai proses pewarnaan (Kolorize)...\n");
+                await send("Menghubungkan ke AI Engine V2...\n");
 
-                // Timer untuk mengirim fakta setiap 2 detik
                 keepAliveInterval = setInterval(() => {
                     const fact = FACTS[Math.floor(Math.random() * FACTS.length)];
-                    send(`Tau gak sih....${fact}\n`);
+                    send(`Info: ${fact}\n`);
                 }, 2000);
 
-                const result = await kolorize.process(url);
+                const result = await imggenColorize.process(url);
                 
                 clearInterval(keepAliveInterval);
 
                 if (result.success) {
-                    // Simpan hasil ke temp storage
-                    // result.image is relative /api/media/...
                     const dbId = await tempService.save({
-                        output: origin + result.image,
-                        original: url
+                        output: result.image,
+                        original: url,
+                        engine: 'imggen-v2'
                     }, 30);
-                    // Format baru: [true] link
                     await send(`[true] ${origin}/api/temp/${dbId}`);
                 } else {
-                    const errMsg = result.error || 'Unknown Error';
-                    // Format baru: [false] message
-                    await send(`[false] ${errMsg}`);
+                    await send(`[false] ${result.error || 'Gagal mewarnai gambar.'}`);
                 }
             } catch (err) {
                 if (keepAliveInterval) clearInterval(keepAliveInterval);
                 await send(`[false] ${err.message}`);
             } finally {
-                try {
-                    await writer.close();
-                } catch (e) {
-                    // Ignore close errors
-                }
+                try { await writer.close(); } catch (e) {}
             }
         })();
 
