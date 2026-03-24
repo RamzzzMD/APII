@@ -10,7 +10,7 @@ export async function GET(req) {
         const limit = 10;
         
         // Target repository for custom pages
-        const repo = "purujawa06-bot/pageku";
+        const repo = "RamzzzMD/pagenichin";
         const token = process.env.GITHUB_TOKEN;
         let pagesData = [];
 
