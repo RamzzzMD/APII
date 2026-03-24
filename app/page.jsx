@@ -24,7 +24,7 @@ const Hero = () => (
             </span>
         </div>
         <h1 className="text-5xl font-extrabold text-primary mb-3 tracking-tight mt-4">
-            PuruBoy <span className="gradient-text">API</span>
+            Ranzz <span className="gradient-text">API</span>
         </h1>
         <p className="text-secondary text-sm leading-relaxed max-w-sm mx-auto font-medium">
             Platform API modular terbaik dengan integrasi AI, Downloader, dan Anime Streaming. Gratis, cepat, dan mudah digunakan.
