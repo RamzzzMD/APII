@@ -13,7 +13,7 @@ export async function GET(req) {
         }
 
         const status = await dubbing.checkStatus(taskId);
-
+        
         return NextResponse.json({
             success: true,
             author: 'Ranzz',
