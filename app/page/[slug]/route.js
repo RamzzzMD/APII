@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req, { params }) {
     const { slug } = params;
-    const repo = "purujawa06-bot/pageku";
+    const repo = "RamzzzMD/pagenichin";
     const fileName = `PuruPage[${slug}].html`;
 
     try {
