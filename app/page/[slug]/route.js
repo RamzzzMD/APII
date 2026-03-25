@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(req, { params }) {
     const { slug } = params;
     const repo = "RamzzzMD/pagenichin";
-    const fileName = `RanzzPage[${slug}].html`;
+    const fileName = `PuruPage[${slug}].html`;
 
     try {
         // Construct raw URL to download the HTML directly from GitHub
