@@ -15,7 +15,7 @@ export const viewport = {
 };
 
 export const metadata = {
-  metadataBase: new URL('https://puruboy-api.vercel.app'),
+  metadataBase: new URL('https://apii.ranzzajaah.my.id'),
   title: {
     default: 'Ranzz API - Platform API Modular & Tools AI Gratis',
     template: '%s | Ranzz API'
@@ -27,7 +27,7 @@ export const metadata = {
   openGraph: {
     title: 'Ranzz API - Solusi API Modular & Cepat',
     description: 'Akses ratusan endpoint API gratis untuk AI, Downloader, dan Anime. Dokumentasi lengkap dan respons cepat.',
-    url: 'https://puruboy-api.vercel.app',
+    url: 'https://apii.ranzzajaah.my.id',
     siteName: 'Ranzz API',
     locale: 'id_ID',
     type: 'website',
